@@ -1,6 +1,7 @@
 package domain;
 
-public class Subscriber extends Entity {
+
+public class Subscriber extends EntityObj {
     private String username;
     private String firstName;
     private String lastName;
@@ -12,10 +13,12 @@ public class Subscriber extends Entity {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        Cnp = cnp;
+        this.Cnp = cnp;
         this.phoneNo = phoneNo;
         this.password = password;
     }
+
+    public Subscriber(){}
 
     public String getUsername() {
         return username;

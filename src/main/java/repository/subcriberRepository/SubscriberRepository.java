@@ -1,37 +1,90 @@
 package repository.subcriberRepository;
 
 import domain.Subscriber;
-import repository.JdbcUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import repository.RepositoryException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
 public class SubscriberRepository implements ISubscriberRepository {
-    private JdbcUtils jdbcUtils;
 
-    public SubscriberRepository(Properties props){
-        jdbcUtils = new JdbcUtils(props);
+    public SubscriberRepository(){
+        try {
+            initialize();
+        }catch (Exception e){
+            System.err.println("Exception "+e);
+            e.printStackTrace();
+        }finally {
+            close();
+        }
+    }
+
+    static SessionFactory sessionFactory;
+    static void initialize() {
+        // A SessionFactory is set up once for an application!
+        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure() // configures settings from hibernate.cfg.xml
+                .build();
+        try {
+            sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Exception "+e);
+            StandardServiceRegistryBuilder.destroy( registry );
+        }
+    }
+
+    static void close(){
+        if ( sessionFactory != null ) {
+            sessionFactory.close();
+        }
+
     }
 
     @Override
-    public void add(Subscriber elem) throws RepositoryException {
-        Connection connection = jdbcUtils.getConnection();
-        try(PreparedStatement preSmt = connection.prepareStatement("insert into Subscribers(username, firstName, lastName, Cnp, phoneNo, password) values(?, ?, ?, ?, ?, ?)")){
-            connection.createStatement().execute("PRAGMA foreign_keys = ON");
-            preSmt.setString(1, elem.getUsername());
-            preSmt.setString(2, elem.getFirstName());
-            preSmt.setString(3, elem.getLastName());
-            preSmt.setString(4, elem.getCnp());
-            preSmt.setString(5, elem.getPhoneNo());
-            preSmt.setString(6, elem.getPassword());
-            preSmt.executeUpdate();
-        } catch (SQLException throwables) {
-            throw new RepositoryException("invalid username");
+    public void add(Subscriber subscriber) throws RepositoryException {
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try(Session session = sessionFactory.openSession()) {
+            Transaction tx = null;
+            try {
+                tx = session.beginTransaction();
+                session.save(subscriber);
+                tx.commit();
+            } catch (RuntimeException ex) {
+                System.err.println("add error " + ex);
+                if (tx != null)
+                    tx.rollback();
+            }
         }
+    }
+
+    @Override
+    public Subscriber findByUsernameAndPassword(String username, String password) {
+        Subscriber subscriber = null;
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try(Session session = sessionFactory.openSession()){
+            Transaction tx = null;
+            try {
+                tx = session.beginTransaction();
+                subscriber = session.createQuery("from Subscriber  where username = ? and password = ?", Subscriber.class)
+                        .setParameter(0, username)
+                        .setParameter(1, password)
+                        .setMaxResults(1)
+                        .uniqueResult();
+                tx.commit();
+            }catch (RuntimeException ex){
+                ex.printStackTrace();
+                if(tx != null)
+                    tx.rollback();
+            }
+        }
+        return subscriber;
     }
 
     @Override
@@ -45,8 +98,26 @@ public class SubscriberRepository implements ISubscriberRepository {
     }
 
     @Override
-    public Subscriber findById(Integer integer) {
-        return null;
+    public Subscriber findById(Integer id) {
+        Subscriber subscriber = null;
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try(Session session = sessionFactory.openSession()){
+            Transaction tx = null;
+            try {
+                tx = session.beginTransaction();
+                subscriber = session.createQuery("from Subscriber  where id = ?", Subscriber.class)
+                        .setParameter(0, id)
+                        .setMaxResults(1)
+                        .uniqueResult();
+                tx.commit();
+            }catch (RuntimeException ex){
+                ex.printStackTrace();
+                if(tx != null)
+                    tx.rollback();
+            }
+        }
+        return subscriber;
     }
 
     @Override
@@ -57,29 +128,5 @@ public class SubscriberRepository implements ISubscriberRepository {
     @Override
     public int size() {
         return 0;
-    }
-
-    @Override
-    public Subscriber findByUsernameAndPassword(String username, String password) {
-        Connection con = jdbcUtils.getConnection();
-        Subscriber subscriber = null;
-        try(PreparedStatement preStm = con.prepareStatement("select * from Subscribers where username = ? and password = ?")){
-            preStm.setString(1, username);
-            preStm.setString(2, password);
-            try(ResultSet result = preStm.executeQuery()){
-                while(result.next()){
-                    int id = result.getInt("id");
-                    String firstName = result.getString("firstName");
-                    String lastName = result.getString("lastName");
-                    String cnp = result.getString("Cnp");
-                    String phoneNo = result.getString("phoneNo");
-                    subscriber = new Subscriber(username, firstName, lastName, cnp, phoneNo, password);
-                    subscriber.setId(id);
-                }
-            }
-        } catch (SQLException ex) {
-            System.err.println("Error DB" + ex);
-        }
-        return subscriber;
     }
 }

@@ -1,66 +1,122 @@
 package repository.bookRepository;
 
 import domain.Book;
-import domain.BookCategory;
 import domain.BookStatus;
-import repository.JdbcUtils;
+import domain.Subscriber;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import repository.RepositoryException;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 
 public class BookRepository implements IBookRepository {
-    private JdbcUtils jdbcUtils;
 
-    public BookRepository(Properties props){
-        jdbcUtils = new JdbcUtils(props);
+    public BookRepository(){
+        try {
+            initialize();
+        }catch (Exception e){
+            System.err.println("Exception "+e);
+            e.printStackTrace();
+        }finally {
+            close();
+        }
+    }
+
+    static SessionFactory sessionFactory;
+    static void initialize() {
+        // A SessionFactory is set up once for an application!
+        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure() // configures settings from hibernate.cfg.xml
+                .build();
+        try {
+            sessionFactory = new MetadataSources( registry ).buildMetadata().buildSessionFactory();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Exception "+e);
+            StandardServiceRegistryBuilder.destroy( registry );
+        }
+    }
+
+    static void close(){
+        if ( sessionFactory != null ) {
+            sessionFactory.close();
+        }
+
     }
 
     @Override
-    public void add(Book elem) throws RepositoryException {
+    public void add(Book book) throws RepositoryException {
+        if (sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try (Session session = sessionFactory.openSession()) {
+            Transaction tx = null;
+            try {
+                tx = session.beginTransaction();
+                session.save(book);
+                tx.commit();
+            } catch (RuntimeException ex) {
+                System.err.println("add error " + ex);
+                if (tx != null)
+                    tx.rollback();
+
+            }
+        }
+    }
+
+    @Override
+    public void delete(java.lang.Integer integer) {
 
     }
 
     @Override
-    public void delete(Integer integer) {
+    public void update(java.lang.Integer integer, Book elem) {
 
     }
 
     @Override
-    public void update(Integer integer, Book elem) {
-
-    }
-
-    @Override
-    public Book findById(Integer integer) {
-        return null;
+    public Book findById(java.lang.Integer id) {
+        Book book = null;
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try(Session session = sessionFactory.openSession()){
+            Transaction tx = null;
+            try {
+                tx = session.beginTransaction();
+                book = session.createQuery("from Book  where id = ?", Book.class)
+                        .setParameter(0, id)
+                        .setMaxResults(1)
+                        .uniqueResult();
+                tx.commit();
+            }catch (RuntimeException ex){
+                ex.printStackTrace();
+                if(tx != null)
+                    tx.rollback();
+            }
+        }
+        return book;
     }
 
     @Override
     public Iterable<Book> findAll() {
-        Connection con = jdbcUtils.getConnection();
-        List<Book> books = new ArrayList<>();
-        try(PreparedStatement preStm = con.prepareStatement("select * from Books")){
-            try(ResultSet result = preStm.executeQuery()){
-                while(result.next()){
-                    int id = result.getInt("id");
-                    String code = result.getString("code");
-                    String name = result.getString("name");
-                    String author = result.getString("author");
-                    BookCategory category = BookCategory.valueOf(result.getString("category"));
-                    BookStatus status = BookStatus.valueOf(result.getString("status"));
-                    Book book = new Book(code, name, author, category, status);
-                    book.setId(id);
-                    books.add(book);
-                }
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        Iterable<Book> books = null;
+        try(Session session = sessionFactory.openSession()){
+            Transaction tr = null;
+            try {
+                tr = session.beginTransaction();
+                books = session.createQuery("from Book", Book.class)
+                        .list().stream().filter(x -> x.getStatus() == BookStatus.available).toList();
+                tr.commit();
+            }catch (RuntimeException ex){
+                ex.printStackTrace();
+                if(tr != null)
+                    tr.rollback();
             }
-        } catch (SQLException ex) {
-            System.err.println("Error DB" + ex);
         }
         return books;
     }
@@ -68,5 +124,27 @@ public class BookRepository implements IBookRepository {
     @Override
     public int size() {
         return 0;
+    }
+
+    @Override
+    public void changeBookStatus(BookStatus status, Integer id) {
+        if(sessionFactory == null || sessionFactory.isClosed())
+            initialize();
+        try(Session session = sessionFactory.openSession()){
+            Transaction tr = null;
+            try {
+                tr = session.beginTransaction();
+                String hqlUpdate = "update Book set status = ? where id = ?";
+                session.createQuery( hqlUpdate )
+                        .setParameter(0, status)
+                        .setParameter(1, id)
+                        .executeUpdate();
+                tr.commit();
+            }catch (RuntimeException ex){
+                ex.printStackTrace();
+                if(tr != null)
+                    tr.rollback();
+            }
+        }
     }
 }

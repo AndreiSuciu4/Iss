@@ -2,7 +2,6 @@ package com.example.librarymanagement;
 
 import domain.Subscriber;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -12,10 +11,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import service.Service;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class LoginController {
     public TextField usernameField;
@@ -32,7 +31,7 @@ public class LoginController {
     public void logIn(ActionEvent actionEvent) {
         String username = usernameField.getText();
         String password = passwordField.getText();
-        Subscriber subscriber = service.findByUsernameAndPassword(username, password);
+        Subscriber subscriber = service.findSubscriberByUsernameAndPassword(username, password);
         if(subscriber == null){
             Util.showWarning("error", "invalid username or password!");
             return;
@@ -47,10 +46,10 @@ public class LoginController {
         }
 
         LibraryController libraryController =
-                loader.<LibraryController>getController();
+                loader.getController();
         libraryController.setService(service);
         libraryController.setCurrentSubscriber(subscriber);
-        Scene scene = new Scene(root, 681.0, 470);
+        Scene scene = new Scene(Objects.requireNonNull(root), 1171, 470);
         Stage stage;
         stage = (Stage)((Node)actionEvent.getSource()).getScene().getWindow();
         stage.setTitle("Library");
@@ -61,7 +60,7 @@ public class LoginController {
 
     public void signUp(ActionEvent actionEvent) {
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("signUp.fxml"));
+                getClass().getResource("signUpView.fxml"));
         Parent root= null;
         try {
             root = loader.load();
@@ -70,9 +69,9 @@ public class LoginController {
         }
 
         SignUpController signUpController =
-                loader.<SignUpController>getController();
+                loader.getController();
         signUpController.setService(service);
-        Scene scene = new Scene(root, 681.0, 470);
+        Scene scene = new Scene(Objects.requireNonNull(root), 681.0, 470);
         Stage stage;
         stage = (Stage)((Node)actionEvent.getSource()).getScene().getWindow();
         stage.setTitle("Sign up");

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="borrowings">
+
+    <class name="domain.Borrowing" table="Borrowings">
+        <id name="id">
+            <generator class="increment"/>
+        </id>
+        <list name="books" table="BooksBorrowing" lazy="false">
+            <key column="id"></key>
+            <index column="type"></index>
+            <element column="book" type="integer"></element>
+        </list>
+        <property name="data"/>
+        <property name="status"/>
+        <property name="subscriber"/>
+    </class>
+
+</hibernate-mapping>

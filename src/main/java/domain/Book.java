@@ -1,10 +1,17 @@
 package domain;
 
-public class Book extends Entity{
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+
+public class Book extends EntityObj {
     private String code;
     private String name;
     private String author;
+
+    @Enumerated(EnumType.STRING)
     private BookCategory category;
+
+    @Enumerated(EnumType.STRING)
     private BookStatus status;
 
     public Book(String code, String name, String author, BookCategory category, BookStatus status) {
@@ -14,6 +21,8 @@ public class Book extends Entity{
         this.category = category;
         this.status = status;
     }
+
+    public Book(){}
 
     public String getAuthor() {
         return author;

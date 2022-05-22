@@ -3,7 +3,7 @@ package validator;
 import domain.Subscriber;
 
 public class SubscriberValidator {
-    public void Validate(Subscriber subscriber) throws ValidatorException {
+    public void validate(Subscriber subscriber) throws ValidatorException {
         String errors = "";
         if(subscriber.getFirstName() == "")
             errors += "invalid firstName!\n";

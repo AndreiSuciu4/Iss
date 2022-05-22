@@ -1,6 +1,5 @@
 package com.example.librarymanagement;
 
-import domain.Subscriber;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -16,6 +15,7 @@ import service.Service;
 import validator.ValidatorException;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class SignUpController {
     public TextField firstNameField;
@@ -42,7 +42,7 @@ public class SignUpController {
         String password = passwordField.getText();
 
         try {
-            service.AddSubscriber(username, firstName, lastName, cnp, phoneNo, password);
+            service.addSubscriber(username, firstName, lastName, cnp, phoneNo, password);
             Util.showWarning("Success sign up", "Congratulation!");
             logIn(actionEvent);
         } catch (RepositoryException | ValidatorException e) {
@@ -61,9 +61,9 @@ public class SignUpController {
         }
 
         LoginController loginController =
-                loader.<LoginController>getController();
+                loader.getController();
         loginController.setService(service);
-        Scene scene = new Scene(root, 681.0, 470);
+        Scene scene = new Scene(Objects.requireNonNull(root), 681.0, 470);
         Stage stage;
         stage = (Stage)((Node)actionEvent.getSource()).getScene().getWindow();
         stage.setTitle("Login");

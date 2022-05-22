@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
-
 <?import javafx.scene.image.ImageView?>
-<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.librarymanagement.LibraryController">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="470.0" prefWidth="1171.0" style="-fx-background-color: green;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.librarymanagement.LibraryController">
    <children>
-       <ImageView fx:id="bookImage" fitHeight="470.0" fitWidth="689.0">
-       </ImageView>
-      <TableView fx:id="booksTable" layoutX="42.0" layoutY="35.0" prefHeight="200.0" prefWidth="536.0" style="-fx-background-color: #dc7541;">
+       <ImageView fx:id="bookImage" fitHeight="470.0" fitWidth="1171.0" />
+      <TableView fx:id="booksTable" layoutX="33.0" layoutY="63.0" prefHeight="288.0" prefWidth="536.0" style="-fx-background-color: #dc7541;">
         <columns>
           <TableColumn fx:id="id" minWidth="0.0" prefWidth="0.0" style="-fx-background-color: #dc7541;" text="id" />
           <TableColumn fx:id="code" prefWidth="89.5999755859375" style="-fx-background-color: #dc7541;" text="code" />
@@ -19,5 +21,42 @@
             <TableColumn fx:id="status" prefWidth="96.0" style="-fx-background-color: #dc7541;" text="status" />
         </columns>
       </TableView>
+      <Button layoutX="1028.0" layoutY="351.0" mnemonicParsing="false" onAction="#borrowBooksClicked" style="-fx-background-color: #dc7541;" text="Borrow books">
+         <font>
+            <Font name="Arial Black" size="12.0" />
+         </font></Button>
+      <Button layoutX="510.0" layoutY="381.0" mnemonicParsing="false" onAction="#selectClicked" style="-fx-background-color: #dc7541;" text="Select">
+         <font>
+            <Font name="Arial Black" size="12.0" />
+         </font></Button>
+      <TableView fx:id="currentBooksTable" layoutX="607.0" layoutY="63.0" prefHeight="200.0" prefWidth="536.0" style="-fx-background-color: #dc7541;">
+         <columns>
+            <TableColumn fx:id="currentid" minWidth="0.0" prefWidth="0.0" style="-fx-background-color: #dc7541;" text="id" />
+            <TableColumn fx:id="currentCode" prefWidth="89.5999755859375" style="-fx-background-color: #dc7541;" text="code" />
+            <TableColumn fx:id="currentName" prefWidth="136.800048828125" style="-fx-background-color: #dc7541;" text="name" />
+            <TableColumn fx:id="currentAuthor" prefWidth="111.20001220703125" style="-fx-background-color: #dc7541;" text="author" />
+            <TableColumn fx:id="currentCategory" prefWidth="100.0" style="-fx-background-color: #dc7541;" text="category" />
+            <TableColumn fx:id="currentStatus" prefWidth="96.0" style="-fx-background-color: #dc7541;" text="status" />
+         </columns>
+      </TableView>
+      <Button layoutX="1082.0" layoutY="394.0" mnemonicParsing="false" onAction="#returnClicked" style="-fx-background-color: #dc7541;" text="Return">
+         <font>
+            <Font name="Arial Bold" size="12.0" />
+         </font></Button>
+      <Label layoutX="33.0" layoutY="31.0" text="Available books:">
+         <font>
+            <Font name="Arial Black" size="12.0" />
+         </font>
+      </Label>
+      <Label layoutX="607.0" layoutY="31.0" text="My books:">
+            <font>
+                <Font name="Arial Black" size="12.0" />
+            </font>
+       </Label>
+      <Button layoutX="1084.0" layoutY="19.0" mnemonicParsing="false" style="-fx-background-color: #dc7541;" text="Logout" onAction="#logoutClicked">
+         <font>
+            <Font name="Arial Black" size="12.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>
